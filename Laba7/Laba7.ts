@@ -1,18 +1,3 @@
-function sealed(constructor: Function) {
-    console.log("конструктор заморожен");
-    Object.seal(constructor);
-    Object.seal(constructor.prototype);
-}
-
-function toUpper(target: any, propertyName: string, descriptor: PropertyDescriptor){
-    let orig = descriptor.value;
-    descriptor.value = function(){ 
-        let res: string = orig.apply(this); 
-        return res.toUpperCase();
-    }
-    return descriptor;
-}
-
 interface IOwner{
     surname: string;
     name: string;
@@ -121,6 +106,7 @@ class Owner implements IOwner{
         this.NumberDocument = numberDocument;
     }
 
+
     get surname(): string {
         return this.Surname;
     }
@@ -179,7 +165,6 @@ interface ICar extends IVehicle{
     typeOfBody: BodyType;
     classCar: ClassCar;
 }
-@sealed
 class Car extends Vehicle implements ICar{
 
     private TypeOfBody: BodyType;
@@ -202,7 +187,7 @@ class Car extends Vehicle implements ICar{
     set classCar(classCar: ClassCar) {
         this.ClassCar = classCar;
     }
-    @toUpper
+
     showInfo(){
         console.log(this.TypeOfBody, this.ClassCar, this.mark, this.model, this.yearOfRelease, this.registrationNumber, this.VIN_number);
     }
@@ -223,7 +208,109 @@ enum ClassCar {
     E = "Спортивный автомобиль"
 }
 
+interface IMotorbike extends IVehicle{
+    frameType: string;
+    forSport: boolean;
+}
+class Motorbike extends Vehicle implements IMotorbike {
+    private FrameType: string;
+    private ForSport: boolean;
+    constructor(mark: string, model: string, yearOfRelease: number, VIN_number: number, registrationNumber: number, owner: IOwner, forSport: boolean, frameType: string){
+        super(mark, model, yearOfRelease, VIN_number, registrationNumber, owner);
+        this.ForSport = forSport;
+        this.FrameType = frameType;
+    }
+    get frameType(): string {
+        return this.FrameType;
+    }
+    set frameType(frameType: string) {
+        this.FrameType = frameType;
+    }
+
+    get forSport(): boolean {
+        return this.ForSport;
+    }
+    set forSport(forSport: boolean) {
+        this.ForSport = forSport;
+    }
+    getMotorbikeSpecificInfo(): string {
+        const info = {
+            frameType: this.FrameType,
+            forSport: this.ForSport
+        };
+        return JSON.stringify(info);
+    }
+    showInfo(){
+        console.log(this.FrameType, this.ForSport, this.mark, this.model, this.yearOfRelease, this.registrationNumber, this.VIN_number);
+    }
+}
+interface IVehicleStorage<T extends IVehicle>{
+    dateCreate: Date;
+    data: T[];
+    getAll(): T[];
+    save(data: T): void;
+    sortByOwnerLastName(): void;
+    findByOwnerDocumentNumberPrefix(prefix: string): T[];
+}
+
+class VehicleStorage<T extends IVehicle> implements IVehicleStorage<T>{
+    private readonly DateCreate: Date;
+    private Date: T[];
+    constructor(){
+        this.DateCreate = new Date();
+        this.Date = [];
+    }
+
+    get dateCreate(): Date {
+        return this.DateCreate;
+    }
+
+    get data(): T[] {
+        return this.Date;
+    }
+    save(data: T): void {
+        this.Date.push(data);
+    }
+    sortByOwnerLastName(): void {
+        this.Date.sort((a, b) => {
+            const lastNameA = a.owner.surname;
+            const lastNameB = b.owner.surname;
+            return lastNameA.localeCompare(lastNameB);
+        });
+    }
+    findByOwnerDocumentNumberPrefix(prefix: string): T[] {
+        return this.Date.filter(vehicle => {
+            const documentNumber = vehicle.owner.numberDocument.toString();
+            return documentNumber.startsWith(prefix);
+        });
+    }
+    getAll(): T[] {
+        return this.Date;
+    }
+}
 const owner: IOwner = new Owner("Андреев", "Андрей", "Андреевич", new Date(), Documents.PASSPORT, 1234, 567890);
 const car1: ICar = new Car("Lada", "2110", 1999, 3333, 12345, owner, BodyType.SEDAN, ClassCar.B);
+const car2: ICar = new Car("Renault", "Duster", 2015, 3332, 12346, owner, BodyType.SUV, ClassCar.D);
+
+const owner1: IOwner = new Owner("Иванов", "Иван", "Егорович", new Date(), Documents.INTERNATIONALPASSPORT, 111111, 111111);
+
+const bike1: IMotorbike = new Motorbike("Harley-Davidson", "Low Rider", 2020, 33333, 4444, owner1, true, "Большой");
+const bike2: IMotorbike = new Motorbike("Honda", "VFR 1200", 2011, 33332, 4443, owner1, false, "Средний");
+
 console.log(car1.showInfo());
-Object.defineProperty(Car, 'speed', { value: 80});
+console.log(car2.showInfo());
+console.log(bike1.showInfo());
+console.log(bike2.showInfo());
+
+const vehicleStorage: IVehicleStorage<IVehicle> = new VehicleStorage();
+
+vehicleStorage.save(car1);
+vehicleStorage.save(car2);
+vehicleStorage.save(bike1);
+vehicleStorage.save(bike2);
+
+vehicleStorage.sortByOwnerLastName();
+
+console.log(vehicleStorage.getAll());
+
+console.log(vehicleStorage.findByOwnerDocumentNumberPrefix("1"));

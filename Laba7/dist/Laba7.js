@@ -1,22 +1,3 @@
-var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-function sealed(constructor) {
-    console.log("конструктор заморожен");
-    Object.seal(constructor);
-    Object.seal(constructor.prototype);
-}
-function toUpper(target, propertyName, descriptor) {
-    let orig = descriptor.value;
-    descriptor.value = function () {
-        let res = orig.apply(this);
-        return res.toUpperCase();
-    };
-    return descriptor;
-}
 var Documents;
 (function (Documents) {
     Documents["PASSPORT"] = "\u041F\u0430c\u043F\u043E\u0440\u0442";
@@ -130,7 +111,7 @@ class Owner {
         console.log(this.Surname, this.Name, this.DateOfBirth, this.Document, this.NumberDocument, this.SerieDocument, this.Patronumic);
     }
 }
-let Car = class Car extends Vehicle {
+class Car extends Vehicle {
     constructor(mark, model, yearOfRelease, VIN_number, registrationNumber, owner, typeOfBody, classCar) {
         super(mark, model, yearOfRelease, VIN_number, registrationNumber, owner);
         this.TypeOfBody = typeOfBody;
@@ -151,13 +132,7 @@ let Car = class Car extends Vehicle {
     showInfo() {
         console.log(this.TypeOfBody, this.ClassCar, this.mark, this.model, this.yearOfRelease, this.registrationNumber, this.VIN_number);
     }
-};
-__decorate([
-    toUpper
-], Car.prototype, "showInfo", null);
-Car = __decorate([
-    sealed
-], Car);
+}
 var BodyType;
 (function (BodyType) {
     BodyType["SEDAN"] = "\u0421\u0435\u0434\u0430\u043D";
@@ -175,7 +150,81 @@ var ClassCar;
     ClassCar["D"] = "\u041F\u0440\u0435\u0434\u0441\u0442\u0430\u0432\u0438\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0439  \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C";
     ClassCar["E"] = "\u0421\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0439 \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C";
 })(ClassCar || (ClassCar = {}));
+class Motorbike extends Vehicle {
+    constructor(mark, model, yearOfRelease, VIN_number, registrationNumber, owner, forSport, frameType) {
+        super(mark, model, yearOfRelease, VIN_number, registrationNumber, owner);
+        this.ForSport = forSport;
+        this.FrameType = frameType;
+    }
+    get frameType() {
+        return this.FrameType;
+    }
+    set frameType(frameType) {
+        this.FrameType = frameType;
+    }
+    get forSport() {
+        return this.ForSport;
+    }
+    set forSport(forSport) {
+        this.ForSport = forSport;
+    }
+    getMotorbikeSpecificInfo() {
+        const info = {
+            frameType: this.FrameType,
+            forSport: this.ForSport
+        };
+        return JSON.stringify(info);
+    }
+    showInfo() {
+        console.log(this.FrameType, this.ForSport, this.mark, this.model, this.yearOfRelease, this.registrationNumber, this.VIN_number);
+    }
+}
+class VehicleStorage {
+    constructor() {
+        this.DateCreate = new Date();
+        this.Date = [];
+    }
+    get dateCreate() {
+        return this.DateCreate;
+    }
+    get data() {
+        return this.Date;
+    }
+    save(data) {
+        this.Date.push(data);
+    }
+    sortByOwnerLastName() {
+        this.Date.sort((a, b) => {
+            const lastNameA = a.owner.surname;
+            const lastNameB = b.owner.surname;
+            return lastNameA.localeCompare(lastNameB);
+        });
+    }
+    findByOwnerDocumentNumberPrefix(prefix) {
+        return this.Date.filter(vehicle => {
+            const documentNumber = vehicle.owner.numberDocument.toString();
+            return documentNumber.startsWith(prefix);
+        });
+    }
+    getAll() {
+        return this.Date;
+    }
+}
 const owner = new Owner("Андреев", "Андрей", "Андреевич", new Date(), Documents.PASSPORT, 1234, 567890);
 const car1 = new Car("Lada", "2110", 1999, 3333, 12345, owner, BodyType.SEDAN, ClassCar.B);
+const car2 = new Car("Renault", "Duster", 2015, 3332, 12346, owner, BodyType.SUV, ClassCar.D);
+const owner1 = new Owner("Иванов", "Иван", "Егорович", new Date(), Documents.INTERNATIONALPASSPORT, 111111, 111111);
+const bike1 = new Motorbike("Harley-Davidson", "Low Rider", 2020, 33333, 4444, owner1, true, "Большой");
+const bike2 = new Motorbike("Honda", "VFR 1200", 2011, 33332, 4443, owner1, false, "Средний");
 console.log(car1.showInfo());
-Object.defineProperty(Car, 'speed', { value: 80 });
+console.log(car2.showInfo());
+console.log(bike1.showInfo());
+console.log(bike2.showInfo());
+const vehicleStorage = new VehicleStorage();
+vehicleStorage.save(car1);
+vehicleStorage.save(car2);
+vehicleStorage.save(bike1);
+vehicleStorage.save(bike2);
+vehicleStorage.sortByOwnerLastName();
+console.log(vehicleStorage.getAll());
+console.log(vehicleStorage.findByOwnerDocumentNumberPrefix("1"));
