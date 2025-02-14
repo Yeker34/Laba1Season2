@@ -1,5 +1,3 @@
-declare function sealed(constructor: Function): void;
-declare function toUpper(target: any, propertyName: string, descriptor: PropertyDescriptor): PropertyDescriptor;
 interface IOwner {
     surname: string;
     name: string;
@@ -101,5 +99,44 @@ declare enum ClassCar {
     D = "\u041F\u0440\u0435\u0434\u0441\u0442\u0430\u0432\u0438\u0442\u0435\u043B\u044C\u0441\u043A\u0438\u0439  \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C",
     E = "\u0421\u043F\u043E\u0440\u0442\u0438\u0432\u043D\u044B\u0439 \u0430\u0432\u0442\u043E\u043C\u043E\u0431\u0438\u043B\u044C"
 }
+interface IMotorbike extends IVehicle {
+    frameType: string;
+    forSport: boolean;
+}
+declare class Motorbike extends Vehicle implements IMotorbike {
+    private FrameType;
+    private ForSport;
+    constructor(mark: string, model: string, yearOfRelease: number, VIN_number: number, registrationNumber: number, owner: IOwner, forSport: boolean, frameType: string);
+    get frameType(): string;
+    set frameType(frameType: string);
+    get forSport(): boolean;
+    set forSport(forSport: boolean);
+    getMotorbikeSpecificInfo(): string;
+    showInfo(): void;
+}
+interface IVehicleStorage<T extends IVehicle> {
+    dateCreate: Date;
+    data: T[];
+    getAll(): T[];
+    save(data: T): void;
+    sortByOwnerLastName(): void;
+    findByOwnerDocumentNumberPrefix(prefix: string): T[];
+}
+declare class VehicleStorage<T extends IVehicle> implements IVehicleStorage<T> {
+    private readonly DateCreate;
+    private Date;
+    constructor();
+    get dateCreate(): Date;
+    get data(): T[];
+    save(data: T): void;
+    sortByOwnerLastName(): void;
+    findByOwnerDocumentNumberPrefix(prefix: string): T[];
+    getAll(): T[];
+}
 declare const owner: IOwner;
 declare const car1: ICar;
+declare const car2: ICar;
+declare const owner1: IOwner;
+declare const bike1: IMotorbike;
+declare const bike2: IMotorbike;
+declare const vehicleStorage: IVehicleStorage<IVehicle>;
